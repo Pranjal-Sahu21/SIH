@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["class_uid", "category_uid", "severity_id", "time", "metadata"],
+  "properties": {
+    "class_uid": { "type": "integer" },
+    "category_uid": { "type": "integer" },
+    "severity_id": { "type": "integer" },
+    "time": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["uid", "original_format"],
+      "properties": {
+        "uid": { "type": "string" },
+        "original_format": { "type": "string" }
+      }
+    },
+    "observables": { "type": "array" },
+    "unmapped": { "type": "object" }
+  }
+}
