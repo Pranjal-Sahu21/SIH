@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Quarantined / ingested log entries
+model QuarantineLog {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  source      String   @default("Unknown")
+  rawLog      String   @map("raw_log")
+  status      LogStatus @default(UNPROCESSED)
+  attempts    Int       @default(0)
+  error       String?
+  ocsfEvent   Json?     @map("ocsf_event")
+  matchedRuleId String? @map("matched_rule_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Tamper-evidence hash chain
+  hashValue   String?   @map("hash_value")
+  prevHash    String?   @map("prev_hash")
+
+  @@map("quarantine_logs")
+}
+
+enum LogStatus {
+  UNPROCESSED   @map("unprocessed")
+  AI_RESOLVED   @map("ai_resolved")
+  NEEDS_REVIEW  @map("needs_review")
+  APPROVED      @map("approved")
+
+  @@map("log_status")
+}
+
+// Deterministic parser registry rules
+model RegistryRule {
+  id            String   @id @default(uuid())
+  ruleName      String   @map("rule_name")
+  sourcePattern String   @map("source_pattern")
+  ocsfClass     String   @map("ocsf_class")
+  classUid      Int      @map("class_uid")
+  createdFromAi Boolean  @default(false) @map("created_from_ai")
+  promotedAt    DateTime @default(now()) @map("promoted_at")
+  matchCount    Int      @default(0) @map("match_count")
+  avgLatencyMs  Float    @default(0.0) @map("avg_latency_ms")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("registry_rules")
+}
+
+// Hash chain entries for tamper verification
+model HashChainEntry {
+  id          String   @id @default(uuid())
+  eventId     String   @unique @map("event_id")
+  hashValue   String   @map("hash_value")
+  prevHash    String   @map("prev_hash")
+  nextHash    String?  @map("next_hash")
+  merkleRoot  String   @map("merkle_root")
+  signature   String
+  timestamp   DateTime @default(now())
+  rawData     String   @map("raw_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("hash_chain_entries")
+}

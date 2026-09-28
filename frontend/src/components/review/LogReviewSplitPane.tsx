@@ -3,6 +3,17 @@ import Editor from '@monaco-editor/react';
 import type { RawLogItem, OCSFEvent, ParseLogResponse } from '../../types/log';
 import { parseLogApi } from '../../api/client';
 import { StatusBadge, SeverityBadge } from '../common/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  RotateCcw,
+  ArrowLeft,
+  Save,
+  Clock,
+  AlertTriangle
+} from 'lucide-react';
 
 interface LogReviewSplitPaneProps {
   log: RawLogItem | null;
@@ -17,22 +28,36 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
   onBack,
   onApproveAndSave,
 }) => {
-  const [uiState, setUiState] = useState<UiState>(() => {
-    if (log?.status === 'ai_resolved' && log.ocsf_event) return 'parsed';
-    if (log?.status === 'needs_review') return 'quarantined';
+  if (!log) {
+    return (
+      <Card className="p-12 text-center">
+        <p className="text-zinc-400 font-mono">No log selected for review. Please select a log from the Quarantine Queue.</p>
+        <Button variant="outline" onClick={onBack} className="mt-4">
+          Back to Quarantine Queue
+        </Button>
+      </Card>
+    );
+  }
+
+  // Determine initial UI state based on log status
+  const getInitialState = (): UiState => {
+    if (log.status === 'ai_resolved' && log.ocsf_event) return 'parsed';
+    if (log.status === 'needs_review') return 'quarantined';
     return 'idle';
-  });
+  };
+
+  const [uiState, setUiState] = useState<UiState>(getInitialState());
   const [jsonContent, setJsonContent] = useState<string>(() => {
-    if (log?.ocsf_event) {
+    if (log.ocsf_event) {
       return JSON.stringify(log.ocsf_event, null, 2);
     }
     return '';
   });
-  const [attempts, setAttempts] = useState<number>(log?.attempts || 0);
-  const [errorMessage, setErrorMessage] = useState<string>(log?.error || '');
+  const [attempts, setAttempts] = useState<number>(log.attempts || 0);
+  const [errorMessage, setErrorMessage] = useState<string>(log.error || '');
   const [promoteChecked, setPromoteChecked] = useState<boolean>(true);
   const [rulePattern, setRulePattern] = useState<string>(
-    log?.source && log.source !== 'Unknown' ? `${log.source}.*` : 'sshd\\[\\d+\\]: .*'
+    log.source !== 'Unknown' ? `${log.source}.*` : 'sshd\\[\\d+\\]: .*'
   );
   const [loadingSeconds, setLoadingSeconds] = useState<number>(0);
 
@@ -40,23 +65,13 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
   useEffect(() => {
     let interval: any;
     if (uiState === 'loading') {
+      setLoadingSeconds(0);
       interval = setInterval(() => {
         setLoadingSeconds((prev) => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [uiState]);
-
-  if (!log) {
-    return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-12 text-center">
-        <p className="text-zinc-400 font-mono">No log selected for review. Please select a log from the Quarantine Queue.</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-zinc-800 text-white text-xs font-mono rounded border border-zinc-700 cursor-pointer">
-          Back to Quarantine Queue
-        </button>
-      </div>
-    );
-  }
 
   // Generate AI Mapping trigger
   const handleGenerateAiMapping = async () => {
@@ -71,7 +86,6 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
         setUiState('parsed');
       } else if (response.status === 'quarantined') {
         setErrorMessage(response.error || 'Schema validation failed after 3 retries.');
-        // Provide editable default OCSF template
         const fallbackTemplate: OCSFEvent = {
           class_uid: 3002,
           category_uid: 3,
@@ -124,80 +138,88 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Header Bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <button
+      <Card className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <Button
+            variant="outline"
+            size="icon"
             onClick={onBack}
-            className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 rounded border border-zinc-800 text-xs transition-all cursor-pointer"
+            className="flex-shrink-0"
             title="Back to queue"
           >
-            ← Back
-          </button>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-white text-xs font-mono">Log ID: {log.id}</span>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-sm sm:text-base text-zinc-100">
+                Log ID: <span className="text-cyan-400 font-mono">{log.id}</span>
+              </span>
               <StatusBadge status={log.status} />
             </div>
-            <p className="text-xs font-mono text-zinc-400 mt-0.5">
-              Ingested: <span className="text-zinc-200">{log.timestamp}</span> | Source: <span className="text-cyan-400">{log.source}</span>
-            </p>
+
+            <div className="text-xs text-zinc-400 flex flex-wrap items-center gap-x-2">
+              <span>Ingested: <span className="text-zinc-300">{log.timestamp}</span></span>
+              <span className="text-zinc-600">·</span>
+              <span>Source: <span className="text-cyan-400">{log.source}</span></span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 self-end sm:self-auto justify-end">
           {uiState !== 'idle' && uiState !== 'loading' && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleGenerateAiMapping}
-              className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 text-xs font-mono rounded border border-zinc-700 transition-all cursor-pointer"
             >
+              <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
               Re-run Local AI
-            </button>
+            </Button>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Main Split Pane Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[580px]">
         {/* Left Pane: Read-only Raw Log */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg flex flex-col overflow-hidden shadow-xl">
-          <div className="bg-zinc-950 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-            <span className="text-xs font-mono text-zinc-300">
+        <Card className="flex flex-col overflow-hidden">
+          <div className="bg-zinc-950 px-4 py-3 border-b border-zinc-800 flex items-center justify-between gap-2">
+            <span className="text-xs text-zinc-300">
               Raw Log Text (Forensic Read-Only)
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-zinc-900 text-zinc-400 rounded border border-zinc-800">
-              Whitespace Preserved
-            </span>
+            <Badge variant="secondary" className="whitespace-nowrap">Whitespace Preserved</Badge>
           </div>
-          <div className="p-4 flex-1 bg-[#09090b] font-mono text-xs text-emerald-400/90 whitespace-pre-wrap break-all overflow-y-auto leading-relaxed selection:bg-zinc-700">
+          <div className="p-4 flex-1 bg-[#09090b] font-mono text-xs text-emerald-400/90 whitespace-pre-wrap break-all overflow-y-auto border-t-0 leading-relaxed selection:bg-zinc-700">
             {log.raw_log}
           </div>
-          <div className="bg-zinc-950 px-4 py-2 border-t border-zinc-800 text-[11px] font-mono text-zinc-500 flex justify-between">
+          <div className="bg-zinc-950 px-4 py-2 border-t border-zinc-800 text-[11px] text-zinc-500 flex justify-between">
             <span>Encoding: UTF-8</span>
             <span>Length: {log.raw_log.length} chars</span>
           </div>
-        </div>
+        </Card>
 
         {/* Right Pane: AI Output & OCSF Editor */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg flex flex-col overflow-hidden shadow-xl">
-          {/* Header Strip */}
-          <div className="bg-zinc-950 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-            <span className="text-xs font-mono text-white">
+        <Card className="flex flex-col overflow-hidden">
+          {/* Header Strip with Responsive Badge Flow */}
+          <div className="bg-zinc-950 px-4 py-3 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+            <span className="text-xs text-white whitespace-nowrap">
               Normalized OCSF Event (JSON)
             </span>
 
             {uiState === 'parsed' && (
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-mono px-2 py-0.5 bg-cyan-950 text-cyan-300 rounded border border-cyan-800/80">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="info" className="whitespace-nowrap">
                   AI-Inferred ({attempts} {attempts === 1 ? 'attempt' : 'attempts'})
-                </span>
+                </Badge>
                 <SeverityBadge severityId={currentSeverity} />
               </div>
             )}
 
             {uiState === 'quarantined' && (
-              <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-950 text-rose-300 rounded border border-rose-800/80">
+              <Badge variant="destructive" className="whitespace-nowrap">
                 Failed {attempts} attempts · Manual Fallback
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -206,21 +228,19 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
             {/* 1. IDLE STATE */}
             {uiState === 'idle' && (
               <div className="p-8 text-center max-w-md mx-auto space-y-4">
-                <div className="w-12 h-12 mx-auto rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-cyan-400 font-mono text-xs">
-                  AI
-                </div>
                 <div>
                   <h3 className="text-sm text-white">Generate AI OCSF Mapping</h3>
                   <p className="text-xs text-zinc-400 mt-1 leading-normal">
                     Send raw log to the local on-device LLM to infer OCSF taxonomy, severity, and extract unstructured metadata.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="cyan"
+                  className="w-full py-2.5"
                   onClick={handleGenerateAiMapping}
-                  className="w-full py-2.5 px-4 bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-xs rounded border border-cyan-600 shadow transition-all cursor-pointer"
                 >
                   Generate AI Mapping
-                </button>
+                </Button>
               </div>
             )}
 
@@ -234,15 +254,16 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm text-white">
+                  <h3 className="text-sm text-white flex items-center justify-center">
+                    <Clock className="w-4 h-4 mr-2 text-cyan-400 animate-pulse" />
                     Analyzing log with local AI model
                   </h3>
                   <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
                     Executing strict schema-constrained inference on-device. This can take up to a minute on CPU hardware. UI remains responsive.
                   </p>
                 </div>
-                <div className="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
-                  <div className="bg-cyan-400 h-full w-3/4"></div>
+                <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-cyan-400 h-full animate-pulse w-3/4"></div>
                 </div>
               </div>
             )}
@@ -252,9 +273,12 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
               <div className="flex-1 flex flex-col h-full">
                 {/* Error Banner if Quarantined */}
                 {uiState === 'quarantined' && (
-                  <div className="bg-rose-950/60 border-b border-rose-800 p-3 text-xs font-mono text-rose-200">
-                    <span className="text-rose-300">Last attempt failed (3 retries): </span>
-                    {errorMessage}
+                  <div className="bg-rose-950/60 border-b border-rose-800 p-3 text-xs font-mono text-rose-200 flex items-start space-x-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-rose-300">Last attempt failed (3 retries): </span>
+                      {errorMessage}
+                    </div>
                   </div>
                 )}
 
@@ -285,16 +309,16 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
             {/* 5. NETWORK / SERVER ERROR STATE */}
             {uiState === 'network_error' && (
               <div className="p-8 text-center max-w-md mx-auto space-y-4">
+                <div className="w-14 h-14 mx-auto rounded-full bg-rose-950/70 border border-rose-800 flex items-center justify-center text-rose-400">
+                  <AlertTriangle className="w-7 h-7" />
+                </div>
                 <div>
                   <h3 className="text-sm text-rose-300">Backend Connection Error</h3>
                   <p className="text-xs text-zinc-400 mt-1 font-mono">{errorMessage}</p>
                 </div>
-                <button
-                  onClick={handleGenerateAiMapping}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-mono rounded border border-zinc-700 cursor-pointer"
-                >
+                <Button variant="secondary" onClick={handleGenerateAiMapping}>
                   Retry API Call
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -303,13 +327,13 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
           {(uiState === 'parsed' || uiState === 'quarantined') && (
             <div className="bg-zinc-950 p-4 border-t border-zinc-800 space-y-3">
               {/* Promotion Checkbox Card */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={promoteChecked}
                     onChange={(e) => setPromoteChecked(e.target.checked)}
-                    className="mt-0.5 rounded border-zinc-700 bg-zinc-950 text-emerald-500 focus:ring-emerald-500"
+                    className="mt-1 rounded border-zinc-700 bg-zinc-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900"
                   />
                   <div>
                     <span className="text-xs text-white">
@@ -322,13 +346,13 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
                 </label>
 
                 {promoteChecked && (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:space-x-2 w-full sm:w-auto">
+                  <div className="flex items-center space-x-2">
                     <span className="text-[11px] font-mono text-zinc-400">Regex Pattern:</span>
-                    <input
+                    <Input
                       type="text"
                       value={rulePattern}
                       onChange={(e) => setRulePattern(e.target.value)}
-                      className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-xs font-mono text-cyan-300 focus:outline-none w-full sm:w-48"
+                      className="w-48 text-cyan-300"
                       placeholder="sshd\\[\\d+\\]: .*"
                     />
                   </div>
@@ -336,24 +360,19 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-1">
-                <button
-                  onClick={onBack}
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-mono rounded border border-zinc-800 transition-all cursor-pointer text-center"
-                >
+              <div className="flex items-center justify-between pt-1">
+                <Button variant="secondary" onClick={onBack}>
                   Discard
-                </button>
+                </Button>
 
-                <button
-                  onClick={handleSave}
-                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-mono text-xs rounded border border-emerald-600 shadow transition-all cursor-pointer text-center"
-                >
+                <Button variant="default" onClick={handleSave} className="px-5 py-2.5">
+                  <Save className="w-4 h-4 mr-2" />
                   Approve & Save Event
-                </button>
+                </Button>
               </div>
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

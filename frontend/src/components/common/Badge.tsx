@@ -9,28 +9,28 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   switch (status) {
     case 'unprocessed':
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs tracking-wide bg-zinc-900 text-zinc-400 border border-zinc-700/80">
-          Unprocessed
+        <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-950/80 text-[11px] uppercase tracking-wider text-zinc-400">
+          UNPROCESSED
         </span>
       );
     case 'ai_resolved':
     case 'parsed':
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs tracking-wide bg-amber-950/60 text-amber-300 border border-amber-800/70">
-          AI-Resolved
+        <span className="px-2 py-0.5 rounded border border-amber-800/80 bg-amber-950/40 text-[11px] uppercase tracking-wider text-amber-400">
+          AI-RESOLVED
         </span>
       );
     case 'needs_review':
     case 'quarantined':
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs tracking-wide bg-rose-950/70 text-rose-300 border border-rose-800/80">
-          Needs Review
+        <span className="px-2 py-0.5 rounded border border-rose-800/80 bg-rose-950/40 text-[11px] uppercase tracking-wider text-rose-400">
+          NEEDS REVIEW
         </span>
       );
     case 'approved':
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs tracking-wide bg-emerald-950/70 text-emerald-300 border border-emerald-800/80">
-          Approved
+        <span className="px-2 py-0.5 rounded border border-emerald-800/80 bg-emerald-950/40 text-[11px] uppercase tracking-wider text-emerald-400">
+          APPROVED
         </span>
       );
     default:
@@ -46,28 +46,28 @@ export const SeverityBadge: React.FC<SeverityBadgeProps> = ({ severityId }) => {
   const getSeverityInfo = (id: number) => {
     switch (id) {
       case 0:
-        return { label: '0 - Unknown', color: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
+        return { label: '0 - UNKNOWN', style: 'text-zinc-400 border-zinc-800 bg-zinc-950/80' };
       case 1:
-        return { label: '1 - Info', color: 'bg-blue-950 text-blue-300 border-blue-800' };
+        return { label: '1 - INFO', style: 'text-cyan-400 border-cyan-800/80 bg-cyan-950/40' };
       case 2:
-        return { label: '2 - Low', color: 'bg-teal-950 text-teal-300 border-teal-800' };
+        return { label: '2 - LOW', style: 'text-cyan-400 border-cyan-800/80 bg-cyan-950/40' };
       case 3:
-        return { label: '3 - Medium', color: 'bg-amber-950 text-amber-300 border-amber-800' };
+        return { label: '3 - MEDIUM', style: 'text-amber-400 border-amber-800/80 bg-amber-950/40' };
       case 4:
-        return { label: '4 - High', color: 'bg-orange-950 text-orange-300 border-orange-800' };
+        return { label: '4 - HIGH', style: 'text-amber-400 border-amber-800/80 bg-amber-950/40' };
       case 5:
-        return { label: '5 - Critical', color: 'bg-rose-950 text-rose-300 border-rose-800' };
+        return { label: '5 - CRITICAL', style: 'text-rose-400 border-rose-800/80 bg-rose-950/40' };
       case 6:
-        return { label: '6 - Fatal', color: 'bg-purple-950 text-purple-300 border-purple-800' };
+        return { label: '6 - FATAL', style: 'text-purple-400 border-purple-800/80 bg-purple-950/40' };
       default:
-        return { label: `${id} - Custom`, color: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
+        return { label: `${id} - CUSTOM`, style: 'text-zinc-400 border-zinc-800 bg-zinc-950/80' };
     }
   };
 
   const info = getSeverityInfo(severityId);
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-mono border ${info.color}`}>
+    <span className={`px-2 py-0.5 rounded border text-[11px] uppercase tracking-wider ${info.style}`}>
       {info.label}
     </span>
   );

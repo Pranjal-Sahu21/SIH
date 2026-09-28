@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { verifyLogIntegrityApi } from '../../api/client';
 import type { TamperVerifyResponse } from '../../types/log';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ShieldCheck, ShieldAlert, RefreshCw, Lock } from 'lucide-react';
 
 export const TamperProofPanel: React.FC = () => {
   const [selectedEventId] = useState<string>('evt-ocsf-9921');
@@ -33,100 +36,66 @@ export const TamperProofPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <Card className="p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2">
-            <h2 className="text-base text-white tracking-wide">Tamper-Evidence Verification Engine</h2>
-            <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/80 text-[11px] font-mono">
-              Immutable Ledger
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base sm:text-lg text-white tracking-wide">Tamper-Evidence Verification Engine</h2>
+            <Badge variant="success">Immutable Ledger</Badge>
           </div>
-          <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-            Cryptographic proof ensuring raw log records have not been altered or deleted post-ingestion.
-            The browser client recomputes and verifies the hash chain locally.
+          <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
+            Cryptographic hash chain verification ensuring log integrity and tamper protection.
           </p>
         </div>
 
         {/* Demo Tamper Toggle */}
-        <div className="bg-zinc-950 border border-zinc-800 p-3 rounded flex items-center space-x-3">
-          <label className="flex items-center space-x-2 cursor-pointer">
+        <div className="bg-zinc-950 border border-zinc-800 p-3 rounded-lg flex items-center space-x-3 w-full md:w-auto">
+          <label className="flex items-center space-x-2 cursor-pointer text-xs font-mono text-zinc-300">
             <input
               type="checkbox"
               checked={simulateTamper}
               onChange={(e) => setSimulateTamper(e.target.checked)}
               className="rounded border-zinc-700 bg-zinc-900 text-rose-500 focus:ring-rose-500"
             />
-            <span className="text-xs font-mono text-zinc-300 flex items-center">
-              Simulate Log Tampering (Demo Mode)
-            </span>
+            <span>Simulate Log Tampering (Demo Mode)</span>
           </label>
         </div>
-      </div>
+      </Card>
 
       {/* Main Chain Visualizer */}
-      <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-6 shadow-xl space-y-6">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-          <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest text-[11px]">
+      <Card className="p-4 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-zinc-800 pb-4 gap-3">
+          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
             Cryptographic Hash Chain Sequence (Block #894,102)
           </span>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
+            variant={isVerifying ? 'secondary' : 'default'}
             onClick={handleVerify}
             disabled={isVerifying}
-            className={`px-4 py-2 text-xs font-mono rounded border transition-all cursor-pointer ${
-              isVerifying
-                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border-zinc-700'
-                : 'bg-emerald-700 hover:bg-emerald-600 text-white border-emerald-600'
-            }`}
+            className="w-full sm:w-auto font-mono text-xs"
           >
+            <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isVerifying ? 'animate-spin text-cyan-400' : ''}`} />
             {isVerifying ? 'Verifying Chain...' : 'Verify Cryptographic Integrity'}
-          </motion.button>
+          </Button>
         </div>
 
         {/* Client-side recalculation indicator */}
-        <AnimatePresence>
-          {isVerifying && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-cyan-950/40 border border-cyan-800/80 rounded p-4 text-center space-y-2 overflow-hidden"
-            >
-              <div className="font-mono text-xs text-cyan-300">{recalculatingStep}</div>
-              <div className="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
-                <motion.div
-                  className="bg-cyan-400 h-full"
-                  initial={{ width: '0%' }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 2, ease: 'easeInOut' }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isVerifying && (
+          <div className="bg-cyan-950/40 border border-cyan-800/80 rounded-lg p-4 text-center space-y-2 animate-pulse">
+            <div className="font-mono text-xs text-cyan-300">{recalculatingStep}</div>
+            <div className="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
+              <div className="bg-cyan-400 h-full w-2/3 animate-pulse"></div>
+            </div>
+          </div>
+        )}
 
         {/* Cryptographic Block Chain Nodes */}
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1 },
-            },
-          }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 relative"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
           {/* Previous Block */}
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-            className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 space-y-3 font-mono"
-          >
+          <Card className="p-4 space-y-3 font-mono bg-zinc-950">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Block N-1 (Previous)</span>
+              <span className="text-[11px] text-zinc-500 uppercase">Block N-1 (Previous)</span>
+              <Lock className="w-3.5 h-3.5 text-zinc-600" />
             </div>
             <div>
               <div className="text-xs text-zinc-400">Previous Hash Digest:</div>
@@ -135,30 +104,29 @@ export const TamperProofPanel: React.FC = () => {
               </div>
             </div>
             <div className="text-[11px] text-zinc-500">Timestamp: 2026-10-24 09:18:00</div>
-          </motion.div>
+          </Card>
 
           {/* Target Current Record */}
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-            className={`bg-zinc-950 border rounded-lg p-4 space-y-3 font-mono relative transition-all ${
+          <Card
+            className={`p-4 space-y-3 font-mono relative transition-all bg-zinc-950 ${
               result
                 ? result.verified
-                  ? 'border-emerald-500/80 bg-emerald-950/10'
-                  : 'border-rose-600 bg-rose-950/20'
+                  ? 'border-emerald-500/80 ring-2 ring-emerald-500/20 bg-emerald-950/10'
+                  : 'border-rose-600 ring-2 ring-rose-600/30 bg-rose-950/20'
                 : 'border-zinc-700'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-300 uppercase tracking-wider">Block N (Target Record)</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-zinc-300 uppercase">Block N (Target Log Record)</span>
               {result && (
                 result.verified ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800/80">
+                  <Badge variant="success">
                     VERIFIED MATCH
-                  </span>
+                  </Badge>
                 ) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800/80">
+                  <Badge variant="destructive" className="animate-pulse">
                     TAMPER DETECTED
-                  </span>
+                  </Badge>
                 )
               )}
             </div>
@@ -181,15 +149,13 @@ export const TamperProofPanel: React.FC = () => {
                 <span className="font-mono text-rose-400">{result.computed_hash}</span>
               </div>
             )}
-          </motion.div>
+          </Card>
 
           {/* Next Block */}
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-            className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 space-y-3 font-mono"
-          >
+          <Card className="p-4 space-y-3 font-mono bg-zinc-950">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Block N+1 (Next)</span>
+              <span className="text-[11px] text-zinc-500 uppercase">Block N+1 (Next)</span>
+              <Lock className="w-3.5 h-3.5 text-zinc-600" />
             </div>
             <div>
               <div className="text-xs text-zinc-400">Next Hash Digest:</div>
@@ -198,23 +164,24 @@ export const TamperProofPanel: React.FC = () => {
               </div>
             </div>
             <div className="text-[11px] text-zinc-500">Timestamp: 2026-10-24 09:18:10</div>
-          </motion.div>
-        </motion.div>
+          </Card>
+        </div>
 
         {/* Verification Result Alert Banner */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className={`p-5 rounded-lg border font-mono text-xs ${
-                result.verified
-                  ? 'bg-emerald-950/30 border-emerald-800/80 text-emerald-200'
-                  : 'bg-rose-950/60 border-rose-800 text-rose-100'
-              }`}
-            >
+        {result && (
+          <div
+            className={`p-5 rounded-xl border font-mono text-xs ${
+              result.verified
+                ? 'bg-emerald-950/30 border-emerald-800/80 text-emerald-200'
+                : 'bg-rose-950/60 border-rose-800 text-rose-100'
+            }`}
+          >
+            <div className="flex items-start space-x-3">
+              {result.verified ? (
+                <ShieldCheck className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+              ) : (
+                <ShieldAlert className="w-6 h-6 text-rose-500 flex-shrink-0 animate-bounce" />
+              )}
               <div className="space-y-1">
                 <h4 className="text-sm">
                   {result.verified
@@ -231,10 +198,10 @@ export const TamperProofPanel: React.FC = () => {
                   <span>Signature: <code className="text-purple-300">{result.signature}</code></span>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

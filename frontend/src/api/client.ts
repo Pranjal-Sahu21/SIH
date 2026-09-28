@@ -149,3 +149,20 @@ export async function promoteToRegistryApi(payload: { logId: string; pattern: st
     avg_latency_ms: 0.15
   };
 }
+
+export async function approveLogApi(logId: string, ocsfEvent: any): Promise<RawLogItem | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/quarantine/${logId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'approved', ocsf_event: ocsfEvent }),
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch {
+    // Fallback if backend is down
+  }
+  return null;
+}
+

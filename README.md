@@ -9,7 +9,7 @@ ULPF (OmniLog AI) is an enterprise-grade, air-gapped ready log ingestion, normal
 ```
 .
 ├── frontend/             # React + Vite + Tailwind CSS Dark Theme Dashboard
-├── backend/              # Log Processing Engine & AI Normalization Microservice
+├── backend/              # Node.js + Express + Prisma + NeonDB API Server
 └── ULPF_Frontend_Brief.md # Detailed frontend requirement & API contract specification
 ```
 
@@ -22,6 +22,14 @@ ULPF (OmniLog AI) is an enterprise-grade, air-gapped ready log ingestion, normal
 - **Animations**: Framer Motion for UI transitions & slide-out navigation drawers
 - **API Mode**: Live backend endpoints (`/api/parse_log`, `/api/quarantine`, etc.) with built-in fallback.
 
+## Backend Architecture
+
+- **Runtime**: Node.js + TypeScript
+- **Framework**: Express 4
+- **ORM**: Prisma 6 with PostgreSQL (NeonDB — serverless Postgres)
+- **Hashing**: CryptoJS (SHA-256 hash chain + Merkle tree for tamper evidence)
+- **API Endpoints**: `/api/parse_log`, `/api/quarantine`, `/api/verify/:event_id`, `/api/registry/promote`
+
 ## Quick Start (Frontend)
 
 ```bash
@@ -29,3 +37,24 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Quick Start (Backend)
+
+```bash
+cd backend
+npm install
+
+# Copy .env.example to .env and set your NeonDB DATABASE_URL
+cp .env.example .env
+
+# Push schema to NeonDB & generate Prisma client
+npm run db:push
+npm run db:generate
+
+# Seed demo data
+npm run db:seed
+
+# Start dev server (hot-reload on port 8000)
+npm run dev
+```
+
