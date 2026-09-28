@@ -1,42 +1,79 @@
-# Universal Log Pre-processing Framework (ULPF) - Backend Service Specification
+# ULPF Backend — Node.js / Express / Prisma / NeonDB
 
-This directory will contain the Python/FastAPI or Node/Go microservice handling log ingestion, rulebook parsing, local AI normalization, and tamper-evident blockchain/Merkle verification.
+Log ingestion, deterministic parsing, AI-normalization simulation, and tamper-evidence chain for the Universal Log Pre-processing Framework.
 
-## Implemented API Endpoints Contract
+## Tech Stack
 
-### 1. `POST /api/parse_log`
-- **Description**: Parses raw log string via deterministic registry or local AI model.
-- **Request**: `{ "raw_log": "..." }`
-- **Response (Success)**:
-```json
-{
-  "status": "parsed",
-  "attempts": 1,
-  "ocsf_event": {
-    "class_uid": 3002,
-    "category_uid": 3,
-    "severity_id": 3,
-    "time": "2026-10-24T09:15:32Z",
-    "metadata": { "uid": "...", "original_format": "ai_inferred" },
-    "unmapped": { "process": "sshd", "src_ip": "192.168.1.55" }
-  }
-}
+- **Runtime**: Node.js + TypeScript
+- **Framework**: Express 4
+- **ORM**: Prisma 6 with PostgreSQL (NeonDB)
+- **Hashing**: CryptoJS (SHA-256, HMAC)
+- **Dev tooling**: `tsx` (TypeScript executor with watch mode)
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Copy env template and add your NeonDB connection string
+cp .env.example .env
+# Edit .env → set DATABASE_URL to your NeonDB connection string
+
+# 3. Push schema to database
+npm run db:push
+
+# 4. Generate Prisma client
+npm run db:generate
+
+# 5. Seed demo data
+npm run db:seed
+
+# 6. Start dev server (hot-reload)
+npm run dev
 ```
-- **Response (Quarantined)**:
-```json
-{
-  "status": "quarantined",
-  "attempts": 3,
-  "raw_log": "...",
-  "error": "severity_id must be an integer"
-}
+
+The server runs on `http://localhost:8000` by default.
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET`  | `/api/health` | Health check |
+| `GET`  | `/api/quarantine` | List quarantine queue (filter: `?status=unprocessed`) |
+| `GET`  | `/api/quarantine/:id` | Get single log by ID |
+| `POST` | `/api/quarantine` | Ingest a new raw log |
+| `PATCH`| `/api/quarantine/:id` | Update log (Approve & Save) |
+| `POST` | `/api/parse_log` | Parse raw log via registry/AI |
+| `GET`  | `/api/verify/:event_id` | Tamper-evidence verification |
+| `GET`  | `/api/registry` | List all parser registry rules |
+| `POST` | `/api/registry/promote` | Promote AI mapping to permanent rule |
+
+## Project Structure
+
+```
+backend/
+├── prisma/
+│   ├── schema.prisma     # Database schema (3 models + enum)
+│   └── seed.ts           # Demo data seeder
+├── src/
+│   ├── server.ts         # Express app entry point
+│   ├── lib/
+│   │   ├── prisma.ts     # Prisma client singleton
+│   │   └── hash.ts       # SHA-256, Merkle tree, signature utils
+│   └── routes/
+│       ├── quarantine.ts  # Quarantine queue CRUD
+│       ├── parseLog.ts    # Log parsing / AI normalization
+│       ├── verify.ts      # Tamper-evidence verification
+│       └── registry.ts    # Parser registry management
+├── package.json
+├── tsconfig.json
+├── .env.example
+└── .gitignore
 ```
 
-### 2. `GET /api/quarantine`
-- **Description**: Retrieves list of logs currently in quarantine queue.
+## Database Models
 
-### 3. `GET /api/verify/:event_id`
-- **Description**: Returns cryptographic hash chain and Merkle proof for tamper verification.
-
-### 4. `POST /api/registry/promote`
-- **Description**: Promotes an approved AI mapping into a deterministic rule.
+- **QuarantineLog** — Ingested logs with status tracking and OCSF event storage
+- **RegistryRule** — Deterministic parser rules (promoted from AI or hand-written)
+- **HashChainEntry** — Cryptographic hash chain for tamper evidence

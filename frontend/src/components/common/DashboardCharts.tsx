@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,8 @@ import {
 } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 ChartJS.register(
   CategoryScale,
@@ -28,8 +30,49 @@ ChartJS.register(
   Filler
 );
 
-export const DashboardCharts: React.FC = () => {
-  // Chart.js Dark SIEM Global Options Defaults
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ChartErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('Chart.js Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Card className="p-6 text-center">
+          <p className="text-zinc-400 font-mono text-xs">Chart visualization unavailable in this browser session.</p>
+        </Card>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const DashboardChartsContent: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -39,7 +82,7 @@ export const DashboardCharts: React.FC = () => {
         labels: {
           color: '#a1a1aa',
           font: {
-            family: "'General Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            family: "system-ui, -apple-system, sans-serif",
             size: 11,
           },
           boxWidth: 12,
@@ -64,7 +107,7 @@ export const DashboardCharts: React.FC = () => {
         ticks: {
           color: '#71717a',
           font: {
-            family: "'General Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            family: "system-ui, -apple-system, sans-serif",
             size: 10,
           },
         },
@@ -76,7 +119,7 @@ export const DashboardCharts: React.FC = () => {
         ticks: {
           color: '#71717a',
           font: {
-            family: "'General Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            family: "system-ui, -apple-system, sans-serif",
             size: 10,
           },
         },
@@ -84,7 +127,6 @@ export const DashboardCharts: React.FC = () => {
     },
   };
 
-  // Line Chart Data: Log Pipeline Throughput
   const lineChartData = {
     labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'],
     datasets: [
@@ -121,18 +163,17 @@ export const DashboardCharts: React.FC = () => {
     ],
   };
 
-  // Pie Chart Data: Log Severity Breakdown
   const pieChartData = {
     labels: ['Fatal (6)', 'Critical (5)', 'High (4)', 'Medium (3)', 'Low/Info (1-2)'],
     datasets: [
       {
         data: [4, 12, 28, 45, 110],
         backgroundColor: [
-          '#a855f7', // Fatal
-          '#f43f5e', // Critical
-          '#f97316', // High
-          '#f59e0b', // Medium
-          '#06b6d4', // Low/Info
+          '#a855f7',
+          '#f43f5e',
+          '#f97316',
+          '#f59e0b',
+          '#06b6d4',
         ],
         borderColor: '#09090b',
         borderWidth: 2,
@@ -149,7 +190,7 @@ export const DashboardCharts: React.FC = () => {
         labels: {
           color: '#a1a1aa',
           font: {
-            family: "'General Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            family: "system-ui, -apple-system, sans-serif",
             size: 10,
           },
           boxWidth: 10,
@@ -168,8 +209,7 @@ export const DashboardCharts: React.FC = () => {
       transition={{ duration: 0.25 }}
       className="grid grid-cols-1 lg:grid-cols-3 gap-4"
     >
-      {/* 2 Cols: Ingestion Throughput Line Chart */}
-      <div className="lg:col-span-2 bg-zinc-900/90 border border-zinc-800 rounded-lg p-4 sm:p-5 flex flex-col justify-between shadow-xl">
+      <Card className="lg:col-span-2 p-4 sm:p-5 flex flex-col justify-between shadow-xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-zinc-800 pb-3 mb-4 gap-2">
           <div>
             <h3 className="text-sm sm:text-base text-white tracking-wide font-sans">
@@ -179,18 +219,17 @@ export const DashboardCharts: React.FC = () => {
               Real-time events/sec parsed via Deterministic Registry vs AI Fallback Engine
             </p>
           </div>
-          <span className="text-[10px] sm:text-[11px] font-sans px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800/80 self-start sm:self-auto flex-shrink-0">
+          <Badge variant="success" className="self-start sm:self-auto">
             99.98% Fast-Path Active
-          </span>
+          </Badge>
         </div>
 
-        <div className="h-56 sm:h-64 w-full">
-          <Line data={lineChartData} options={commonOptions} />
+        <div className="h-56 sm:h-64 w-full relative">
+          <Line data={lineChartData} options={commonOptions} redraw={true} />
         </div>
-      </div>
+      </Card>
 
-      {/* 1 Col: Severity Distribution Pie Chart */}
-      <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-4 sm:p-5 flex flex-col justify-between shadow-xl">
+      <Card className="p-4 sm:p-5 flex flex-col justify-between shadow-xl">
         <div className="border-b border-zinc-800 pb-3 mb-4">
           <h3 className="text-sm sm:text-base text-white tracking-wide font-sans">
             OCSF Event Severity Taxonomy
@@ -201,9 +240,15 @@ export const DashboardCharts: React.FC = () => {
         </div>
 
         <div className="h-56 sm:h-64 w-full relative flex items-center justify-center p-2">
-          <Pie data={pieChartData} options={pieOptions} />
+          <Pie data={pieChartData} options={pieOptions} redraw={true} />
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 };
+
+export const DashboardCharts: React.FC = () => (
+  <ChartErrorBoundary>
+    <DashboardChartsContent />
+  </ChartErrorBoundary>
+);
