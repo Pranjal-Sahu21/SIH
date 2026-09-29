@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RawLogItem, RegistryRule } from './types/log';
 import { INITIAL_QUARANTINE_LOGS, INITIAL_REGISTRY_RULES } from './api/mockData';
@@ -8,7 +8,7 @@ import { QuarantineTable } from './components/quarantine/QuarantineTable';
 import { LogReviewSplitPane } from './components/review/LogReviewSplitPane';
 import { TamperProofPanel } from './components/tamper/TamperProofPanel';
 import { ParserRegistryView } from './components/registry/ParserRegistryView';
-import { promoteToRegistryApi, approveLogApi } from './api/client';
+import { promoteToRegistryApi, approveLogApi ,fetchQuarantineLogsApi} from './api/client';
 
 import { LoadingSplash } from './components/common/LoadingSplash';
 
@@ -18,7 +18,17 @@ export function App() {
   const [rules, setRules] = useState<RegistryRule[]>(INITIAL_REGISTRY_RULES);
   const [selectedLog, setSelectedLog] = useState<RawLogItem | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
+  
+  const loadLogs = async () => {
+    const data = await fetchQuarantineLogsApi();
+    setLogs(data);
+  };
 
+  // Load real logs from the database when the app starts
+  useEffect(() => {
+    loadLogs();
+  }, []);
+  // ----------------------
   // Unprocessed and Needs Review counts for badge counters
   const unprocessedCount = logs.filter((l) => l.status === 'unprocessed').length;
   const needsReviewCount = logs.filter((l) => l.status === 'needs_review').length;
@@ -99,7 +109,7 @@ export function App() {
             transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             {activeTab === 'quarantine' && (
-              <QuarantineTable logs={logs} onSelectLogForReview={handleSelectLogForReview} />
+              <QuarantineTable logs={logs} onSelectLogForReview={handleSelectLogForReview} onRefresh={loadLogs} />
             )}
 
             {activeTab === 'review' && (
