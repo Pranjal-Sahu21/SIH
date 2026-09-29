@@ -15,15 +15,17 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Search, ArrowUpDown, Eye, Cpu, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-
+import { LogUploader } from '../common/LogUploader';
 interface QuarantineTableProps {
   logs: RawLogItem[];
   onSelectLogForReview: (log: RawLogItem) => void;
+  onRefresh?: () => void;
 }
 
 export const QuarantineTable: React.FC<QuarantineTableProps> = ({
   logs,
   onSelectLogForReview,
+  onRefresh,
 }) => {
   const [filterStatus, setFilterStatus] = useState<LogStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,6 +175,8 @@ export const QuarantineTable: React.FC<QuarantineTableProps> = ({
             <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 text-zinc-400" />
             {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
           </Button>
+
+          <LogUploader onUploadComplete={onRefresh} />
         </div>
       </Card>
 
