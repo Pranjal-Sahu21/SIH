@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CRYPTIC_SYMBOLS_UPPER = '#*&%$@!?~^<>/\\|:;=+-[]{}0189XØΞλΔ§±89#*&%$@!';
 const CRYPTIC_SYMBOLS_LOWER = '#*&%$@!?~^<>/\\|:;=+-[]{}0189xøΞλΔ§±89#*&%$@!';
-const TARGET_TEXT = 'OmniLog AI';
+const TARGET_TEXT = 'Logसेतु';
 const NUM_COLUMNS = 5;
 
 // Staircase Columns Variants with Staggered Delays
@@ -24,7 +24,7 @@ interface LoadingSplashProps {
 }
 
 export const LoadingSplash: React.FC<LoadingSplashProps> = ({ onComplete }) => {
-  const [displayText, setDisplayText] = useState('OmniLog AI');
+  const [displayText, setDisplayText] = useState('Logसेतु');
   const [progress, setProgress] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -81,9 +81,9 @@ export const LoadingSplash: React.FC<LoadingSplashProps> = ({ onComplete }) => {
     };
   }, [onComplete]);
 
-  // Split displayText for consistent dual-color rendering
-  const brandPart = displayText.length >= 7 ? displayText.slice(0, 7) : displayText;
-  const aiPart = displayText.length >= 7 ? displayText.slice(7) : '';
+  // Split displayText for consistent dual-color rendering ("Log" + "Setu")
+  const logPart = displayText.length >= 3 ? displayText.slice(0, 3) : displayText;
+  const setuPart = displayText.length >= 3 ? displayText.slice(3) : '';
 
   return (
     <AnimatePresence>
@@ -120,16 +120,16 @@ export const LoadingSplash: React.FC<LoadingSplashProps> = ({ onComplete }) => {
               >
                 <img
                   src="/favicon.svg"
-                  alt="OmniLog AI Logo"
+                  alt="Logसेतु Logo"
                   className="w-14 h-14 rounded-2xl shadow-2xl shadow-cyan-950/80 border border-zinc-800 p-1 bg-zinc-950"
                 />
               </motion.div>
 
-              {/* Seamless Scrambling Text Header */}
+              {/* Seamless Scrambling Text Header ("Log" in White, "सेतु" in Cyan) */}
               <div className="space-y-2">
-                <h1 className="text-3xl sm:text-4xl tracking-wider font-sans select-none min-h-[44px]">
-                  <span className="text-white">{brandPart}</span>
-                  <span className="text-cyan-400">{aiPart}</span>
+                <h1 className="text-3xl sm:text-4xl tracking-wider font-sans select-none min-h-[44px] inline-flex items-baseline justify-center">
+                  <span className="text-white">{logPart}</span>
+                  <span className="text-cyan-400 inline-block relative top-[3px] sm:top-[4px]">{setuPart}</span>
                 </h1>
                 <p className="text-xs text-zinc-400 uppercase tracking-widest">
                   Universal Log Pre-processing Framework
