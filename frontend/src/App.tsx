@@ -120,7 +120,11 @@ export function App() {
       {/* Footer */}
       <footer className="border-t border-zinc-900 bg-zinc-950 py-4 text-center text-xs text-zinc-600 px-4">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-          <span>OmniLog AI — Universal Log Normalization Engine</span>
+          <span className="inline-flex items-baseline">
+            <span className="text-zinc-400">Log</span>
+            <span className="text-cyan-400 inline-block relative top-[1.5px]">सेतु</span>
+            <span className="ml-1 text-zinc-500">— Universal Log Normalization Engine</span>
+          </span>
           <span className="hidden sm:inline text-zinc-800">|</span>
           <span className="text-zinc-500">Air-Gapped OCSF Platform</span>
         </div>

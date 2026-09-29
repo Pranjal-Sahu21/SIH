@@ -77,7 +77,7 @@ export async function parseLogApi(rawLog: string): Promise<ParseLogResponse> {
       unmapped: {
         raw_length: rawLog.length,
         inferred_at: new Date().toISOString(),
-        parser_engine: "OmniLog-Local-AI-v1.4"
+        parser_engine: "LogSetu-Local-Engine-v1.4"
       }
     }
   };

@@ -80,10 +80,10 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center space-x-3 cursor-pointer"
                 onClick={() => setActiveTab('quarantine')}
               >
-                <img src="/favicon.svg" alt="OmniLog AI Logo" className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex-shrink-0" />
+                <img src="/favicon.svg" alt="Logसेतु Logo" className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex-shrink-0" />
                 <div className="flex items-center space-x-2">
-                  <span className="text-base sm:text-lg tracking-wider text-white">
-                    OmniLog<span className="text-cyan-400">AI</span>
+                  <span className="text-base sm:text-lg tracking-wider text-white inline-flex items-baseline select-none">
+                    Log<span className="text-cyan-400 inline-block relative top-[2px]">सेतु</span>
                   </span>
                 </div>
               </div>
@@ -168,11 +168,11 @@ export const Header: React.FC<HeaderProps> = ({
                           setIsOpen(false);
                         }}
                       >
-                        <img src="/favicon.svg" alt="OmniLog AI Logo" className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex-shrink-0" />
+                        <img src="/favicon.svg" alt="Logसेतु Logo" className="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex-shrink-0" />
                         <div>
                           <div className="flex items-center space-x-2">
-                            <span className="text-base sm:text-lg tracking-wider text-white">
-                              OmniLog<span className="text-cyan-400">AI</span>
+                            <span className="text-base sm:text-lg tracking-wider text-white inline-flex items-baseline select-none">
+                              Log<span className="text-cyan-400 inline-block relative top-[2px]">सेतु</span>
                             </span>
                           </div>
                         </div>
@@ -221,7 +221,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="border-t border-zinc-900 pt-6 text-sm text-zinc-500 text-center">
-                    OmniLog AI Engine
+                    Logसेतु Engine
                   </div>
                 </motion.div>
               </>

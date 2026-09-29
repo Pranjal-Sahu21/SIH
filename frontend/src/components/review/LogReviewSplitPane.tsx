@@ -104,7 +104,7 @@ export const LogReviewSplitPane: React.FC<LogReviewSplitPaneProps> = ({
         setUiState('quarantined');
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Network error: Failed to connect to OmniLog AI backend service at /api/parse_log');
+      setErrorMessage(err?.message || 'Network error: Failed to connect to Logसेतु backend service at /api/parse_log');
       setUiState('network_error');
     }
   };
