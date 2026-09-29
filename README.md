@@ -131,7 +131,7 @@ flowchart TD
 ## Project Structure
 
 ```text
-SIH/
+ULPF/
 │
 ├── docs/
 │   └── images/                # Application UI screenshots
@@ -189,8 +189,8 @@ SIH/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Pranjal-Sahu21/SIH.git
-cd SIH
+git clone https://github.com/Ri1tik/ULPF.git
+cd ULPF
 ```
 
 ### 2. Start the Backend API Server
@@ -231,7 +231,7 @@ Open your browser to `http://localhost:5173/` to explore Logसेतु!
 
 ## Contributing
 Contributions, issues, and feature requests are welcome! 
-1. Clone the Repository (`git clone https://github.com/Pranjal-Sahu21/SIH.git`)
+1. Clone the Repository (`git clone https://github.com/Ri1tik/ULPF.git`)
 2. Create your Feature Branch (`git checkout -b feature/AmazingParser`)
 3. Commit your Changes (`git commit -m 'Add some AmazingParser'`)
 4. Push to the Branch (`git push origin feature/AmazingParser`)
