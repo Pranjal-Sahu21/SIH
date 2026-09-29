@@ -1,4 +1,4 @@
-# Universal Log Pre-processing Framework (ULPF) - OmniLog AI 
+# Universal Log Pre-processing Framework (ULPF) — Logसेतु (LogSetu)
 
 This document explains the architecture, flow, and purpose of every component in the ULPF project.
 
